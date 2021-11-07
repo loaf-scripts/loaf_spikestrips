@@ -6,6 +6,7 @@ YouTube Showcase: https://www.youtube.com/watch?v=D3UtNxFXnpU
 * Animation when laying down a spikestrip
 * You can remove spikestrips
 * Only the tyre that is touching the spikestrip will burst, unlike some other resources which bursts all tyres.
+* Performance friendly, uses ~0.01ms
 
 ## Standalone & ESX.
 The script works without ESX and with ESX. (please note that you should remove the spikestrip part from your esx_policejob if you intend on using this resource).
