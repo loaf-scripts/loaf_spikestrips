@@ -1,24 +1,38 @@
 Config = {
-    JobBased = {
-        Enabled = true,
-        ESX = false, -- if enabled but esx is false, it will use the server file to check if someone is a police officer (you can edit who is police there)
+    Debugging = false,
+
+    ESX = false, -- use esx?
+    RequireJobRemove = false, -- should everyone be able to remove a spikestrip, or just people with job allowed to use spikestrips?
+    
+    Menu = {
+        Enabled = true, -- TriggerEvent("loaf_spikestrips:spikestripMenu") to open the menu
+        Command = "spikestrip", -- set to false to disable
+        Keybind = "F5", -- set to false to disable
+    },
+
+    JobBased = false, -- require job to place a spike strip?
+    
+    ESXFeatures = {
+        Item = "spikestrip", -- item to deploy a spikestrip (set to false if you don't want to have this enabled)
+        ReceiveRemove = true, -- receive spikestrip item if you remove a spikestrip?
+        ReceiveJob = false, -- false = police won't receive a spikestrip when they remove it | true = police will receive a spikestrip item when they remove a spikestrip
+        
+        UseWarmenu = false, -- false = default esx menu, true = use warmenu (looks like gta:o)
         PoliceJobs = { -- ESX police jobs
             "police",
         },
     },
-
-    DebugLine = false, -- draw a line above stingers? (useful for finding offest1 & offset 2)
-    -- DebugLine looks like this: https://gyazo.com/08396daae87d3a0aab87b31a3cb2c0c4
-    Stingers = {
-        {
-            object = "p_ld_stinger_s",
-            offset1 = vector3(0.0, -1.75, -0.5),
-            offset2 = vector3(0.0, 1.8, 1.5),
-        }
-    },
 }
 
 Strings = {
-    ["remove_stinger"] = "~INPUT_CONTEXT~ ~r~Remove ~s~stinger",
-    ["not_police"] = "You are not a police officer and can therefore not spawn spikestrips.",
+    ["remove_stinger"] = "~INPUT_CONTEXT~ ~r~Remove ~s~spikestrip",
+    ["not_police"] = "You are not a police officer and can therefore not access this menu.",
+
+    ["menu_label"] = "Spikestrip menu",
+    ["menu_sublabel"] = "By Loaf Scripts#7785",
+    ["place_spikestrip"] = "Place spikestrip",
+    ["remove_spikestrip"] = "Remove closest spikestrip",
+    ["select_spikestrip"] = "Spikestrip",
+    ["close_menu"] = "Close menu",
+    ["back"] = "Back",
 }

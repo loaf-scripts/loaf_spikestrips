@@ -1,5 +1,5 @@
 function DeployStinger()
-    local stinger = CreateObject(LoadModel(Config.Stingers[1].object).model, GetOffsetFromEntityInWorldCoords(PlayerPedId(), -0.2, 2.0, 0.0), true, true, 0)
+    local stinger = CreateObject(LoadModel("p_ld_stinger_s").model, GetOffsetFromEntityInWorldCoords(PlayerPedId(), -0.2, 2.0, 0.0), true, true, 0)
     SetEntityHeading(stinger, GetEntityHeading(PlayerPedId()))
     FreezeEntityPosition(stinger, true)
     PlaceObjectOnGroundProperly(stinger)
@@ -34,6 +34,35 @@ function DeployStinger()
     PlayEntityAnim(stinger, "p_stinger_s_idle_deployed", LoadDict("p_ld_stinger_s"), 1000.0, false, true, 0, 0.99, 0)
 
     return stinger
+end
+
+RegisterNetEvent("loaf_spikestrips:placeSpikestrip")
+AddEventHandler("loaf_spikestrips:placeSpikestrip", function()
+    DeployStinger()
+end)
+
+function RemoveStinger()
+    if DoesEntityExist(closestStinger) then
+        NetworkRequestControlOfEntity(closestStinger)
+        SetEntityAsMissionEntity(closestStinger, true, true)
+        DeleteEntity(closestStinger)
+
+        Wait(250)
+        if not DoesEntityExist(closestStinger) then
+            TriggerServerEvent("loaf_spikestrips:removedSpike")
+        end
+    end
+end
+
+function TouchingStinger(coords, stinger)
+    local min, max = GetModelDimensions(GetEntityModel(stinger))
+    local size = max - min
+    local w, l, h = size.x, size.y, size.z
+
+    local offset1 = GetOffsetFromEntityInWorldCoords(stinger, 0.0, l/2, h*-1)
+    local offset2 = GetOffsetFromEntityInWorldCoords(stinger, 0.0, l/2 * -1, h)
+
+    return IsPointInAngledArea(coords, offset1, offset2, w*2, 0, false)
 end
 
 function LoadDict(Dict)
