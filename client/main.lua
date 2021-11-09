@@ -1,4 +1,5 @@
 ESX = nil
+QBCore = nil
 
 isPolice = false
 closestStinger = 0
@@ -13,7 +14,7 @@ CreateThread(function()
         Wait(500)
     end
 
-    if Config.ESX then
+    if Config.Framework == "esx" then
         while not ESX do
             Wait(500)
             TriggerEvent("esx:getSharedObject", function(esx)
@@ -24,24 +25,34 @@ CreateThread(function()
         while not ESX.GetPlayerData() or not ESX.GetPlayerData().job or not ESX.GetPlayerData().job.name do
             Wait(500)
         end
+    elseif Config.Framework == "qb" then
+        while not QBCore do
+            Wait(500)
+            QBCore = exports["qb-core"]:GetCoreObject()
+        end
+
+        while not QBCore.Functions.GetPlayerData() or not QBCore.Functions.GetPlayerData().job or not QBCore.Functions.GetPlayerData().job.name do
+            Wait(500)
+        end
     end
 
-    if Config.JobBased then
-        if Config.ESX then
-            RegisterNetEvent("esx:setJob")
-            AddEventHandler("esx:setJob", function(jobData)
+    if Config.RequireJobPlace then
+        if Config.Framework == "esx" or Config.Framework == "qb" then
+            local eventName = Config.Framework == "esx" and "esx:setJob" or "QBCore:Client:OnJobUpdate"
+            RegisterNetEvent(eventName)
+            AddEventHandler(eventName, function(jobData)
                 local jobName = jobData.name
                 isPolice = false
-                for _, job in pairs(Config.ESXFeatures.PoliceJobs) do
+                for _, job in pairs(Config.FrameworkFeatures.PoliceJobs) do
                     if job == jobName then
                         isPolice = true
                         break
                     end
                 end
             end)
-            
-            local jobName = ESX.GetPlayerData().job.name
-            for _, job in pairs(Config.ESXFeatures.PoliceJobs) do
+
+            local jobName = Config.Framework == "esx" and ESX.GetPlayerData().job.name or QBCore.Functions.GetPlayerData().job.name
+            for _, job in pairs(Config.FrameworkFeatures.PoliceJobs) do
                 if job == jobName then
                     isPolice = true
                     break

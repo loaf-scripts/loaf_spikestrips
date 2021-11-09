@@ -7,10 +7,59 @@ YouTube Showcase: https://www.youtube.com/watch?v=D3UtNxFXnpU
 * You can remove spikestrips
 * Only the tyre that is touching the spikestrip will burst, unlike some other resources which bursts all tyres.
 * Performance friendly, uses ~0.01ms
+* Standalone, but has support for ESX and QBCore
 
-## Standalone & ESX.
-The script works with and without ESX. (follow [this guide](https://github.com/loaf-scripts/loaf_spikestrips/wiki/esx_policejob-compatibility) if you use esx_policejob).
+## Standalone, ESX & QBCore
+The script works with ESX, QBCore or standalone without any framework.
 
-If you only want certain jobs to be able to use spikestrips but you don't have ESX, set [`Config.JobBased`](https://github.com/loaf-scripts/loaf_spikestrips/blob/main/config.lua#L13) to true. You can edit who is able to use the script at the server.lua, simply add an identifier (any identifier works) to the `police` table in the [server/main.lua](https://github.com/loaf-scripts/loaf_spikestrips/blob/main/server/main.lua#L1) file.
+### Use with ESX
+#### Installation
+* Run the esx.sql file
+* Rename from `loaf_spikestrips-main` to `loaf_spikestrips`
+* Drag the resource to your server resources folder
+* Add `ensure loaf_spikestrips` to your server.cfg
+#### Configuration
+* Set `Config.Framework` to `"esx"`
+* Modify `FrameworkFeatures` to your liking.
+#### esx_policejob compatibility
+Visit [this page](https://github.com/loaf-scripts/loaf_spikestrips/wiki/esx_policejob-compatibility) for a guide on how to use the resource together with esx_policejob
 
-If you only want certain jobs to be able to use spikestrips and you use ESX, set [`Config.JobBased`](https://github.com/loaf-scripts/loaf_spikestrips/blob/main/config.lua#L13) to true. You also need to set [`Config.ESX`](https://github.com/loaf-scripts/loaf_spikestrips/blob/main/config.lua#L4) to true. You can configure what jobs are able to use spikestrips by editing the [`PoliceJobs`](https://github.com/loaf-scripts/loaf_spikestrips/blob/main/config.lua#L21) table in the config.
+### Use with QBCore
+#### Installation
+* Add the following code to your QBShared.Items file, located in [qb-core/shared.lua:51](https://github.com/qbcore-framework/qb-core/blob/main/shared.lua#L51) by default: 
+```lua
+["spikestrip"] = {
+    ["name"] = "spikestrip",
+    ["label"] = "Spikestrip",
+    ["weight"] = 25,
+    ["type"] = "item",
+    ["image"] = "spikestrip.png",
+    ["unique"] = false,
+    ["useable"] = true,
+    ["shouldClose"] = true,
+    ["combinable"] = nil,
+    ["description"] = "A spikestrip"
+},
+```
+* For the not WarMenu menu, you need [qb-menu](https://github.com/qbcore-framework/qb-menu)
+* Rename from `loaf_spikestrips-main` to `loaf_spikestrips`
+* Drag the resource to your server resources folder
+* Add `ensure loaf_spikestrips` to your server.cfg
+* Move the spikestrip.png file to your qb-inventory/html/images folder
+#### Configuration
+* Set `Config.Framework` to `"qb"`
+* Modify `FrameworkFeatures` to your liking.
+#### qb-policejob compatibility
+Visit [this page](https://github.com/loaf-scripts/loaf_spikestrips/wiki/qb-policejob-compatibility) for a guide on how to use the resource together with qb-policejob
+
+### Use standalone
+#### Installation
+* Rename from `loaf_spikestrips-main` to `loaf_spikestrips`
+* Drag the resource to your server resources folder
+* Add `ensure loaf_spikestrips` to your server.cfg
+#### Configuration
+* Set `Config.Framework` to `"none"`
+* Modify the `police` table in the server.lua file to change who is able to place spike strips.
+
+## Credits
+* `@Jay ;)#6969` - helped with adding support for qb-core

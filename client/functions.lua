@@ -23,11 +23,11 @@ function DeployStinger()
     NetworkStopSynchronisedScene(scene)
 
     -- play deploy animation for stinger
-    SetEntityVisible(stinger, true)
     PlayEntityAnim(stinger, "P_Stinger_S_Deploy", LoadDict("p_ld_stinger_s"), 1000.0, false, true, 0, 0.0, 0)
     while not IsEntityPlayingAnim(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy", 3) do
         Wait(0)
     end
+    SetEntityVisible(stinger, true)
     while IsEntityPlayingAnim(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy", 3) and GetEntityAnimCurrentTime(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy") <= 0.99 do
         Wait(0)
     end
@@ -53,6 +53,11 @@ function RemoveStinger()
         end
     end
 end
+
+RegisterNetEvent("loaf_spikestrips:removeSpikestrip")
+AddEventHandler("loaf_spikestrips:removeSpikestrip", function()
+    RemoveStinger()
+end)
 
 function TouchingStinger(coords, stinger)
     local min, max = GetModelDimensions(GetEntityModel(stinger))

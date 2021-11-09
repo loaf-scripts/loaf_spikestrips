@@ -21,7 +21,7 @@ if Config.Menu.Enabled then
             end
         end
 
-        if Config.ESX and not Config.ESXFeatures.UseWarmenu then
+        if Config.Framework == "esx" and not Config.FrameworkFeatures.UseWarmenu then
             while not ESX do
                 Wait(500)
             end
@@ -38,12 +38,10 @@ if Config.Menu.Enabled then
                             value = "place_spikestrip"
                         })
                     end
-                    if isPolice or not Config.RequireJobRemove then
-                        table.insert(elements, {
-                            label = Strings["remove_spikestrip"],
-                            value = "remove_spikestrip"
-                        })
-                    end
+                    table.insert(elements, {
+                        label = Strings["remove_spikestrip"],
+                        value = "remove_spikestrip"
+                    })
             
                     ESX.UI.Menu.Open("default", GetCurrentResourceName(), "spikestrip_menu", {
                         title = Strings["menu_label"],
@@ -60,6 +58,43 @@ if Config.Menu.Enabled then
                     end)
                 else
                     ESX.ShowNotification(Strings["not_police"])
+                end
+            end)
+        elseif Config.Framework == "qb" and not Config.FrameworkFeatures.UseWarmenu then
+            while not QBCore do
+                Wait(500)
+            end
+            
+            RegisterNetEvent("loaf_spikestrips:spikestripMenu")
+            AddEventHandler("loaf_spikestrips:spikestripMenu", function()
+                if isPolice or not Config.RequireJobRemove then
+                    exports["qb-menu"]:closeMenu()
+
+                    local elements = {
+                        {
+                            header = Strings["place_spikestrip"],
+                            params = {
+                                event = "loaf_spikestrips:placeSpikestrip",
+                            }
+                        }
+                    }
+                    if isPolice or not Config.RequireJobRemove then
+                        table.insert(elements, {
+                            header = Strings["remove_spikestrip"],
+                            params = {
+                                event = "loaf_spikestrips:removeSpikestrip",
+                            }
+                        })
+                    end
+                    table.insert(elements, {
+                        header = Strings["close_menu"],
+                        params = {
+                            event = "qb-menu:client:closeMenu",
+                        }
+                    })
+                    exports["qb-menu"]:openMenu(elements)
+                else
+                    QBCore.Functions.Notify(Strings["not_police"])
                 end
             end)
         else
@@ -80,7 +115,7 @@ if Config.Menu.Enabled then
                 Wait(500)
                 while WarMenu.Begin("spikestrip") do
                     Wait(0)
-                    if isPolice and IsPedOnFoot(PlayerPedId()) and WarMenu.Button(Strings["select_spikestrip"]) then
+                    if isPolice and IsPedOnFoot(PlayerPedId()) and WarMenu.Button(Strings["place_spikestrip"]) then
                         DeployStinger()
                     end
 

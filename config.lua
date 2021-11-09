@@ -1,25 +1,31 @@
 Config = {
     Debugging = false,
+    
+    Framework = "none", --[[ What framework to use
+        Valid options:
+            * "qb" (qb-core)
+            * "esx" (ESX)
+            * "none" (Standalone)
+    ]]
 
-    ESX = false, -- use esx?
-    RequireJobRemove = false, -- should everyone be able to remove a spikestrip, or just people with job allowed to use spikestrips?
+    RequireJobPlace = true, -- require job to place a spike strip?
+    RequireJobRemove = false, -- should everyone be able to remove a spikestrip, or just people with job allowed to place spikestrips?
     
     Menu = {
         Enabled = true, -- TriggerEvent("loaf_spikestrips:spikestripMenu") to open the menu
         Command = "spikestrip", -- set to false to disable
-        Keybind = "F5", -- set to false to disable
+        Keybind = "F5", -- set to false to disable (NOTE: COMMAND CAN'T BE FALSE IF YOU WANT A KEYBIND)
     },
-
-    JobBased = false, -- require job to place a spike strip?
     
-    ESXFeatures = {
+    FrameworkFeatures = { -- these features are only if you use Config.Framework "esx" or "qb"
         Item = "spikestrip", -- item to deploy a spikestrip (set to false if you don't want to have this enabled)
         ReceiveRemove = true, -- receive spikestrip item if you remove a spikestrip?
-        ReceiveJob = false, -- false = police won't receive a spikestrip when they remove it | true = police will receive a spikestrip item when they remove a spikestrip
+        ReceiveJob = true, -- false = police won't receive a spikestrip when they remove it | true = police will receive a spikestrip item when they remove a spikestrip
         
         UseWarmenu = false, -- false = default esx menu, true = use warmenu (looks like gta:o)
-        PoliceJobs = { -- ESX police jobs
+        PoliceJobs = { -- police jobs
             "police",
+            "sheriff",
         },
     },
 }
@@ -30,9 +36,9 @@ Strings = {
 
     ["menu_label"] = "Spikestrip menu",
     ["menu_sublabel"] = "By Loaf Scripts#7785",
-    ["place_spikestrip"] = "Place spikestrip",
+    ["place_spikestrip"] = "Place a spikestrip",
     ["remove_spikestrip"] = "Remove closest spikestrip",
-    ["select_spikestrip"] = "Spikestrip",
     ["close_menu"] = "Close menu",
-    ["back"] = "Back",
+
+    ["cant_carry"] = "Your inventory is full, you did not receive a spikestrip.",
 }
