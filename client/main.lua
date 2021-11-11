@@ -130,30 +130,12 @@ CreateThread(function()
                 Wait(50)
                 local vehicle = GetVehiclePedIsUsing(PlayerPedId())
                 while DoesEntityExist(closestStinger) and closestStingerDistance <= 5.0 do
-                    Wait(25)
+                    Wait(5)
                     if IsEntityTouchingEntity(vehicle, closestStinger) then
-                        local wheels = {
-                            lf = {
-                                coordinates = GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, "wheel_lf")),
-                                wheelId = 0
-                            },
-                            rf = {
-                                coordinates = GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, "wheel_rf")),
-                                wheelId = 1
-                            },
-                            rr = {
-                                coordinates = GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, "wheel_rr")),
-                                wheelId = 5
-                            },
-                            lr = {
-                                coordinates = GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, "wheel_lr")),
-                                wheelId = 4
-                            },
-                        }
-                        for k, v in pairs(wheels) do
-                            if not IsVehicleTyreBurst(vehicle, v.wheelId, false) then
-                                if TouchingStinger(v.coordinates, closestStinger) then
-                                    SetVehicleTyreBurst(vehicle, v.wheelId, 1, 1148846080)
+                        for boneName, wheelId in pairs(wheels) do
+                            if not IsVehicleTyreBurst(vehicle, wheelId, false) then
+                                if TouchingStinger(GetWorldPositionOfEntityBone(vehicle, GetEntityBoneIndexByName(vehicle, boneName)), closestStinger) then
+                                    SetVehicleTyreBurst(vehicle, wheelId, 1, 1148846080)
                                 end
                             end
                         end

@@ -1,5 +1,13 @@
+wheels = {
+    ["wheel_lf"] = 0,
+    ["wheel_rf"] = 1,
+    ["wheel_rr"] = 5,
+    ["wheel_lr"] = 4,
+}
+
 function DeployStinger()
     local stinger = CreateObject(LoadModel("p_ld_stinger_s").model, GetOffsetFromEntityInWorldCoords(PlayerPedId(), -0.2, 2.0, 0.0), true, true, 0)
+    SetEntityAsMissionEntity(stinger, true, true)
     SetEntityHeading(stinger, GetEntityHeading(PlayerPedId()))
     FreezeEntityPosition(stinger, true)
     PlaceObjectOnGroundProperly(stinger)
@@ -80,25 +88,17 @@ function LoadDict(Dict)
 end
 
 function LoadModel(model)
-    if type(model) == "string" then 
-        model = GetHashKey(model) 
-    elseif type(model) ~= "number" then
-        return {loaded = false, model = model} 
-    end
+    model = type(model) == "string" and GetHashKey(model) or model
 
-    local timer = GetGameTimer() + 20000 -- 20 seconds to load
     if not HasModelLoaded(model) and IsModelInCdimage(model) then
+        local timer = GetGameTimer() + 20000 -- 20 seconds to load
         RequestModel(model)
-        while not HasModelLoaded(model) and timer >= GetGameTimer() do -- give it time to load
+        while not HasModelLoaded(model) and timer >= GetGameTimer() do -- wait for the model to load
             Wait(50)
         end
     end
 
-    if HasModelLoaded(model) then
-        return {loaded = true, model = model}
-    else
-        return {loaded = false, model = model}
-    end
+    return {loaded = HasModelLoaded(model), model = model}
 end
 
 function HelpText(text, sound)
