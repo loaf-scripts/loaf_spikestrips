@@ -63,3 +63,4 @@ Visit [this page](https://github.com/loaf-scripts/loaf_spikestrips/wiki/qb-polic
 
 ## Credits
 * `@Jay ;)#6969` - helped with adding support for qb-core
+* @warxander - [warmenu](https://github.com/warxander/warmenu)
