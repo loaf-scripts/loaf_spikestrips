@@ -42,7 +42,7 @@ Showcase: https://www.youtube.com/watch?v=iarfWQxAMAg
 
 ## Installation
 
-1. Download the latest [release](./releases/latest)
+1. Download the latest [release](https://github.com/loaf-scripts/loaf_spikestrips/releases)
 2. Install all [dependencies](#dependencies)
 3. [Add the item](#adding-the-item) to your server
 4. [Configure](#configuration) the script to your liking
