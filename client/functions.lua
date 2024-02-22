@@ -1,108 +1,99 @@
-wheels = {
-    ["wheel_lf"] = 0,
-    ["wheel_rf"] = 1,
-    ["wheel_rr"] = 5,
-    ["wheel_lr"] = 4,
-}
-
-function DeployStinger()
-    local stinger = CreateObject(LoadModel("p_ld_stinger_s").model, GetOffsetFromEntityInWorldCoords(PlayerPedId(), -0.2, 2.0, 0.0), true, true, 0)
-    SetEntityAsMissionEntity(stinger, true, true)
-    SetEntityHeading(stinger, GetEntityHeading(PlayerPedId()))
-    FreezeEntityPosition(stinger, true)
-    PlaceObjectOnGroundProperly(stinger)
-    SetEntityVisible(stinger, false)
-
-    -- init scene
-    local scene = NetworkCreateSynchronisedScene(GetEntityCoords(PlayerPedId()), GetEntityRotation(PlayerPedId(), 2), 2, false, false, 1065353216, 0, 1.0)
-    NetworkAddPedToSynchronisedScene(PlayerPedId(), scene, LoadDict("amb@medic@standing@kneel@enter"), "enter", 8.0, -8.0, 3341, 16, 1148846080, 0)
-    NetworkStartSynchronisedScene(scene)
-    -- wait for the scene to start
-    while not IsSynchronizedSceneRunning(NetworkConvertSynchronisedSceneToSynchronizedScene(scene)) do
-        Wait(0)
-    end
-    -- make the scene faster (looks better)
-    SetSynchronizedSceneRate(NetworkConvertSynchronisedSceneToSynchronizedScene(scene), 3.0)
-    -- wait a bit
-    while GetSynchronizedScenePhase(NetworkConvertSynchronisedSceneToSynchronizedScene(scene)) < 0.14 do
-        Wait(0)
-    end
-    -- stop the scene early
-    NetworkStopSynchronisedScene(scene)
-
-    -- play deploy animation for stinger
-    PlayEntityAnim(stinger, "P_Stinger_S_Deploy", LoadDict("p_ld_stinger_s"), 1000.0, false, true, 0, 0.0, 0)
-    while not IsEntityPlayingAnim(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy", 3) do
-        Wait(0)
-    end
-    SetEntityVisible(stinger, true)
-    while IsEntityPlayingAnim(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy", 3) and GetEntityAnimCurrentTime(stinger, "p_ld_stinger_s", "P_Stinger_S_Deploy") <= 0.99 do
-        Wait(0)
-    end
-    PlayEntityAnim(stinger, "p_stinger_s_idle_deployed", LoadDict("p_ld_stinger_s"), 1000.0, false, true, 0, 0.99, 0)
-
-    return stinger
+---@param text string
+---@param errType "info" | "error" | "success
+function Notify(text, errType)
+	if Config.NotificationSystem == "framework" and FrameworkNotify then
+		FrameworkNotify(text, errType)
+	else
+		lib.notify({
+			description = text,
+			type = errType
+		})
+	end
 end
 
-RegisterNetEvent("loaf_spikestrips:placeSpikestrip")
-AddEventHandler("loaf_spikestrips:placeSpikestrip", function()
-    DeployStinger()
-end)
+RegisterNetEvent("loaf_spikestrips:notify", Notify)
 
-function RemoveStinger()
-    if DoesEntityExist(closestStinger) then
-        NetworkRequestControlOfEntity(closestStinger)
-        SetEntityAsMissionEntity(closestStinger, true, true)
-        DeleteEntity(closestStinger)
+---@param entity number
+function PlayDeployAudio(entity)
+	debugprint("Loading audio bank..")
 
-        Wait(250)
-        if not DoesEntityExist(closestStinger) then
-            TriggerServerEvent("loaf_spikestrips:removedSpike")
-        end
-    end
+	while not RequestScriptAudioBank("dlc_stinger/stinger", false) do
+		Wait(0)
+	end
+
+	debugprint("Audio bank loaded")
+
+	local soundId = GetSoundId()
+
+	PlaySoundFromEntity(soundId, "deploy_stinger", entity, "stinger", false, 0)
+
+	ReleaseSoundId(soundId)
+	ReleaseNamedScriptAudioBank("stinger")
 end
 
-RegisterNetEvent("loaf_spikestrips:removeSpikestrip")
-AddEventHandler("loaf_spikestrips:removeSpikestrip", function()
-    RemoveStinger()
-end)
+---Loads an anim dict and returns it
+---@param dict string
+---@return string
+function LoadDict(dict)
+	RequestAnimDict(dict)
 
-function TouchingStinger(coords, stinger)
-    local min, max = GetModelDimensions(GetEntityModel(stinger))
-    local size = max - min
-    local w, l, h = size.x, size.y, size.z
+	while not HasAnimDictLoaded(dict) do
+		Wait(0)
+	end
 
-    local offset1 = GetOffsetFromEntityInWorldCoords(stinger, 0.0, l/2, h*-1)
-    local offset2 = GetOffsetFromEntityInWorldCoords(stinger, 0.0, l/2 * -1, h)
-
-    return IsPointInAngledArea(coords, offset1, offset2, w*2, 0, false)
+	return dict
 end
 
-function LoadDict(Dict)
-    while not HasAnimDictLoaded(Dict) do 
-        Wait(0)
-        RequestAnimDict(Dict)
-    end
-
-    return Dict
-end
-
+---Loads a model and returns the hash
+---@param model number | string
+---@return number
 function LoadModel(model)
-    model = type(model) == "string" and GetHashKey(model) or model
+	local hash = type(model) == "string" and joaat(model) or model
 
-    if not HasModelLoaded(model) and IsModelInCdimage(model) then
-        local timer = GetGameTimer() + 20000 -- 20 seconds to load
-        RequestModel(model)
-        while not HasModelLoaded(model) and timer >= GetGameTimer() do -- wait for the model to load
-            Wait(50)
-        end
-    end
+	RequestModel(hash)
 
-    return {loaded = HasModelLoaded(model), model = model}
+	while not HasModelLoaded(hash) do
+		Wait(0)
+	end
+
+	---@diagnostic disable-next-line: return-type-mismatch
+	return hash
 end
 
-function HelpText(text, sound)
-    AddTextEntry(GetCurrentResourceName(), text)
-    BeginTextCommandDisplayHelp(GetCurrentResourceName())
-    EndTextCommandDisplayHelp(0, 0, (sound == true), -1)
+---Wait for an animation to start
+---@param entity number
+---@param dict string
+---@param animation string
+function WaitForAnimation(entity, dict, animation)
+	while not IsEntityPlayingAnim(entity, dict, animation, 3) do
+		Wait(0)
+	end
+end
+
+---Waits for a network id to exists, takes control of the entity and returns it
+---@param netId number
+---@return number entity
+function WaitForControlAndNetId(netId)
+	while not NetworkDoesNetworkIdExist(netId) or not NetworkGetEntityFromNetworkId(netId) do
+        Wait(0)
+    end
+
+    local entity = NetworkGetEntityFromNetworkId(netId)
+
+    while not NetworkHasControlOfEntity(entity) do
+        NetworkRequestControlOfEntity(entity)
+        Wait(0)
+    end
+
+    return entity
+end
+
+function ShowHelpText(textEntry)
+	ClearHelp(true)
+	BeginTextCommandDisplayHelp(textEntry)
+	EndTextCommandDisplayHelp(0, true, true, 0)
+end
+
+function ClearHelpText()
+	ClearHelp(true)
 end

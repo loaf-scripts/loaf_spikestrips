@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dat54>
+    <Version value="7314721" />
+    <ContainerPaths>
+        <Item>dlc_stinger\stinger</Item>
+    </ContainerPaths>
+    <Items>
+        <!-- SimpleSounds -->
+        <Item type="SimpleSound">
+            <Name>deploy_stinger_sp</Name>
+            <Header>
+                <Flags value="0x00008004" />
+                <Volume value="200" />
+                <Category>scripted</Category>
+            </Header>
+            <ContainerName>dlc_stinger/stinger</ContainerName>
+            <FileName>deploy_stinger</FileName>
+            <WaveSlotNum value="0" />
+        </Item>
+        <!-- SoundSets ! -->
+        <Item type="SoundSet">
+            <Name>stinger</Name>
+            <Header>
+                <Flags value="0xAAAAAAAA" />
+            </Header>
+            <SoundSets>
+                <Item>
+                    <ScriptName>deploy_stinger</ScriptName>
+                    <ChildSound>deploy_stinger_sp</ChildSound>
+                </Item>
+            </SoundSets>
+        </Item>
+    </Items>
+</Dat54>
