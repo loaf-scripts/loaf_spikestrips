@@ -5,7 +5,7 @@ lua54 "yes"
 author "Loaf Scripts"
 description "Spike strip script that only bursts the touching tires."
 
-version "2.0.0"
+version "2.0.1"
 
 shared_scripts {
 	"@ox_lib/init.lua",

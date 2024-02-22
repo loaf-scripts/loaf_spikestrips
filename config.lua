@@ -30,7 +30,7 @@ Config.RemoveDistance = false -- if the person who placed it goes this far away,
 Config.Item = {}
 Config.Item.Require = true -- require item to place a spike strip?
 Config.Item.Usable = true -- allow using item to place a spike strip?
-Config.Item.Remove = false -- remove item after placing a spike strip? it will be given back when taking up
+Config.Item.Remove = true -- remove item after placing a spike strip? it will be given back when taking up
 Config.Item.Name = "spikestrip"
 
 Config.Job = {}

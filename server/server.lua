@@ -1,4 +1,4 @@
----@type { string: { netId?: number, coords: vector3, heading: number, minOffset: vector3, maxOffset: vector3, placer: number } }
+---@type { string: { netId?: number, coords: vector3, rotation: vector3, minOffset: vector3, maxOffset: vector3, placer: number } }
 local stingers = {}
 local stingersCount = 0
 local placing = {}
@@ -107,7 +107,7 @@ local function removeStinger(id)
 	return true
 end
 
-RegisterNetEvent("loaf_spikestrips:placedSpikestrip", function(coords, heading, minOffset, maxOffset, netId)
+RegisterNetEvent("loaf_spikestrips:placedSpikestrip", function(coords, rotation, minOffset, maxOffset, netId)
 	local src = source
 
 	if Config.SpawnMethod ~= "local" and not netId then
@@ -134,13 +134,13 @@ RegisterNetEvent("loaf_spikestrips:placedSpikestrip", function(coords, heading, 
 	stingers[id] = {
 		netId = netId,
 		coords = coords,
-		heading = heading,
+		rotation = rotation,
 		minOffset = minOffset,
 		maxOffset = maxOffset,
 		placer = src
 	}
 
-	TriggerClientEvent("loaf_spikestrips:spikestripAdded", -1, src, id, coords, heading, minOffset, maxOffset, netId)
+	TriggerClientEvent("loaf_spikestrips:spikestripAdded", -1, src, id, coords, rotation, minOffset, maxOffset, netId)
 
 	if Config.AutoDelete then
 		SetTimeout(Config.AutoDelete * 60000, function()
@@ -216,6 +216,47 @@ if Config.ClearCommand then
 		Log(source, "clearspikestrips", L("logs_cleared_spikestrips"))
 	end)
 end
+
+CreateThread(function()
+	if Config.SpawnMethod ~= "server" then
+		return
+	end
+
+	while true do
+		Wait(1000)
+
+		for id, stinger in pairs(stingers) do
+			local netId = stinger?.netId
+			local coords = stinger?.coords
+			local rotation = stinger?.rotation
+
+			if not netId or not coords or not rotation then
+				goto continue
+			end
+
+			local entity = NetworkGetEntityFromNetworkId(stinger.netId)
+
+			if entity and entity ~= 0 then
+				goto continue
+			end
+
+			debugprint("entity not found for stinger", id, "respawning..")
+
+			local nwEntity = CreateObjectNoOffset(model, coords.x, coords.y, coords.z, true, false, false)
+			local newNetId = NetworkGetNetworkIdFromEntity(nwEntity)
+
+			FreezeEntityPosition(nwEntity, true)
+			SetEntityRotation(nwEntity, rotation.x, rotation.y, rotation.z, 2, true)
+
+			stinger.netId = newNetId
+
+			debugprint("respawned stinger", id, newNetId)
+			TriggerClientEvent("loaf_spikestrips:updateNetId", -1, id, newNetId)
+
+			::continue::
+		end
+	end
+end)
 
 AddEventHandler("playerDropped", function()
 	local src = source

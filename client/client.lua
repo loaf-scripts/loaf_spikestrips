@@ -1,4 +1,4 @@
----@alias stinger { id: string, netId?: number, entity?: number, coords: vector3, heading: number, minOffset: vector3, maxOffset: vector3, point?: table }
+---@alias stinger { id: string, netId?: number, entity?: number, coords: vector3, rotation: vector3, minOffset: vector3, maxOffset: vector3, point?: table }
 
 ---@type {string: stinger }
 local stingers = lib.callback.await("loaf_spikestrips:getSpikestrips")
@@ -68,7 +68,7 @@ local function placeStinger()
 	local minOffset = GetOffsetFromEntityInWorldCoords(stinger, 0.0, -1.84, -0.1)
 	local maxOffset = GetOffsetFromEntityInWorldCoords(stinger, 0.0, 1.84, 0.1)
 
-	TriggerServerEvent("loaf_spikestrips:placedSpikestrip", coords, heading, minOffset, maxOffset, netId)
+	TriggerServerEvent("loaf_spikestrips:placedSpikestrip", coords, GetEntityRotation(stinger, 2), minOffset, maxOffset, netId)
 
 	-- Player deploying animation
 	TaskPlayAnim(playerPed, playerDict, "enter", 1000.0, -1.0, 200, 16, 0, false, false, false)
@@ -126,10 +126,10 @@ RegisterNetEvent("loaf_spikestrips:removeSpikestrip", function(data)
 	RemoveAnimDict(dict)
 end)
 
-RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords, heading, minOffset, maxOffset, netId)
+RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords, rotation, minOffset, maxOffset, netId)
 	local entity = netId and NetworkDoesNetworkIdExist(netId) and NetworkGetEntityFromNetworkId(netId) or nil
 
-	if Config.SpawnMethod == "local" and placer ~= cache.serverId and #(cache.coords - coords) < 150.0 then
+	if Config.SpawnMethod == "local" and placer ~= cache.serverId and #(GetEntityCoords(cache.ped) - coords) < 150.0 then
 		Wait(550)
 
 		local stingerDict = LoadDict("p_ld_stinger_s")
@@ -138,6 +138,7 @@ RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords
 
 		FreezeEntityPosition(stinger, true)
 		PlaceObjectOnGroundProperly(stinger)
+		SetEntityRotation(stinger, rotation.x, rotation.y, rotation.z, 2, true)
 		PlayEntityAnim(stinger, "p_stinger_s_deploy", stingerDict, 1000.0, false, true, false, 0.0, 0)
 
 		WaitForAnimation(stinger, stingerDict, "p_stinger_s_deploy")
@@ -177,7 +178,7 @@ RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords
 		netId = netId,
 		entity = entity,
 		coords = coords,
-		heading = heading,
+		rotation = rotation,
 		minOffset = minOffset,
 		maxOffset = maxOffset,
 		point = point,
@@ -193,6 +194,15 @@ RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords
 			TriggerServerEvent("loaf_spikestrips:removeSpikestrip", id, true)
 		end
 	end
+end)
+
+RegisterNetEvent("loaf_spikestrips:updateNetId", function(id, netId)
+	if not stingers[id] then
+		return
+	end
+
+	stingers[id].netId = netId
+	debugprint("updated netId for stinger", id, "to", netId)
 end)
 
 RegisterNetEvent("loaf_spikestrips:spikestripRemoved", function(id)
@@ -311,7 +321,7 @@ CreateThread(function()
 
 					FreezeEntityPosition(stinger.entity, true)
 					PlaceObjectOnGroundProperly(stinger.entity)
-					SetEntityHeading(stinger.entity, stinger.heading)
+					SetEntityRotation(stinger.entity, stinger.rotation.x, stinger.rotation.y, stinger.rotation.z, 2, true)
 
 					SetModelAsNoLongerNeeded(model)
 					debugprint("created local entity for stinger", id)
@@ -322,7 +332,13 @@ CreateThread(function()
 				end
 			end
 
+
 			if stinger.entity and DoesEntityExist(stinger.entity) then
+				if Config.SpawnMethod == "server" and #(GetEntityRotation(stinger.entity, 2) - stinger.rotation) > 1.0 then
+					debugprint("rotation out of sync, updating", id)
+					SetEntityRotation(stinger.entity, stinger.rotation.x, stinger.rotation.y, stinger.rotation.z, 2, true)
+				end
+
 				nearbyCount += 1
 				nearbyStingers[nearbyCount] = stinger
 			end
@@ -356,7 +372,6 @@ if Config.InteractStyle == "target" then
 							infoprint("error", "IsPolice function not defined")
 							return
 						elseif not IsPolice() then
-							print("not police")
 							return
 						end
 					end
