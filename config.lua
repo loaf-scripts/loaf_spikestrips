@@ -13,7 +13,10 @@ Config.NotificationSystem = "ox_lib" -- framework or ox_lib, modify in client/fu
 Config.SpawnMethod = "server" -- local (non-networked), networked or server
 Config.BurstNPC = false -- burst tires of NPCs? note that this can be resource intensive
 Config.LogSystem = false -- "discord" or "ox_lib". Set your discord webhook in server/logs.lua. Set to false to disable
+Config.Blips = false -- show blips of all spike strips on the map for allowed jobs?
+Config.AllowFromVehicle = false -- allow throwing spike strips from vehicles?
 
+Config.BlipsCommand = "spikestripblips" -- command to toggle blips (set to false to disable)
 Config.Command = "spikestrip" -- command to place spike strip, set to false to disable
 Config.ClearCommand = "clearspikestrips" -- admin command to clear all spike strips, set to false to disable
 

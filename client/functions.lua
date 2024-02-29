@@ -88,6 +88,23 @@ function WaitForControlAndNetId(netId)
     return entity
 end
 
+---@param coords vector3 | vector4
+---@return number
+function CreateStingerBlip(coords)
+	local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
+
+	SetBlipSprite(blip, 237) -- 237, 274, 677
+	SetBlipColour(blip, 39)
+	SetBlipScale(blip, 0.6)
+	SetBlipAsShortRange(blip, true)
+	SetBlipDisplay(blip, 2)
+
+	BeginTextCommandSetBlipName("SPIKESTRIP_BLIP")
+	EndTextCommandSetBlipName(blip)
+
+	return blip
+end
+
 function ShowHelpText(textEntry)
 	ClearHelp(true)
 	BeginTextCommandDisplayHelp(textEntry)

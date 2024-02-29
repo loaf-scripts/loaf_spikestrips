@@ -13,7 +13,15 @@ end
 local PlayerJob = QB.Functions.GetPlayerData().job
 
 RegisterNetEvent("QBCore:Client:OnJobUpdate", function(jobInfo)
+	local wasPolice = IsPolice()
+
 	PlayerJob = jobInfo
+
+	local isPolice = IsPolice()
+
+	if wasPolice ~= isPolice then
+		TriggerEvent("loaf_spikestrips:toggleIsPolice", isPolice)
+	end
 end)
 
 function IsPolice()

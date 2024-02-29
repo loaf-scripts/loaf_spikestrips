@@ -30,7 +30,15 @@ RegisterNetEvent("esx:setJob", function(job)
 		return
 	end
 
+	local wasPolice = IsPolice()
+
 	ESX.PlayerData.job = job
+
+	local isPolice = IsPolice()
+
+	if wasPolice ~= isPolice then
+		TriggerEvent("loaf_spikestrips:toggleIsPolice", isPolice)
+	end
 end)
 
 function IsPolice()

@@ -19,4 +19,8 @@ Locales = {
 	logs_removed_distance = "Removed the spike strip {id} because the player went too far away",
 	logs_picked_up = "Picked up the spike strip {id}",
 	logs_placed_spikestrip = "Placed a spike strip with the id {id}",
+
+	cant_vehicle = "You can't place spike strips from a vehicle",
+
+	blip_name = "Spike Strip",
 }

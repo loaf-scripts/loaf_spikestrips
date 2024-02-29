@@ -1,4 +1,4 @@
----@alias stinger { id: string, netId?: number, entity?: number, coords: vector3, rotation: vector3, minOffset: vector3, maxOffset: vector3, point?: table }
+---@alias stinger { id: string, netId?: number, entity?: number, coords: vector3, rotation: vector3, minOffset: vector3, maxOffset: vector3, point?: table, blip?: number }
 
 ---@type {string: stinger }
 local stingers = lib.callback.await("loaf_spikestrips:getSpikestrips")
@@ -17,10 +17,22 @@ local function placeStinger()
 	local playerPed = cache.ped
 	local offset = GetOffsetFromEntityInWorldCoords(playerPed, -0.2, 2.0, 0.0)
 	local heading = GetEntityHeading(playerPed)
+	local onFoot = IsPedOnFoot(playerPed)
+	local skipAnimation = false
 	local stinger
 	local netId
 
-	if not IsPedOnFoot(playerPed) then
+	if not onFoot and cache.vehicle then
+		local model = GetEntityModel(cache.vehicle)
+		local min = model and GetModelDimensions(model) or { y = -2.5 }
+
+		offset = GetOffsetFromEntityInWorldCoords(cache.vehicle, 0.0, min.y, 0.0)
+		heading -= 90
+		skipAnimation = true
+	end
+
+	if not Config.AllowFromVehicle and not onFoot then
+		Notify(L("cant_vehicle"), "error")
 		return
 	end
 
@@ -54,13 +66,14 @@ local function placeStinger()
 	if Config.SpawnMethod == "local" then
 		stinger = CreateObject(model, offset.x, offset.y, offset.z, false, false, false)
 		placing = stinger
-	else
+	elseif Config.SpawnMethod == "networked" then
 		stinger = CreateObject(model, offset.x, offset.y, offset.z, true, true, false)
 		netId = NetworkGetNetworkIdFromEntity(stinger)
 	end
 
 	FreezeEntityPosition(stinger, true)
 	SetEntityVisible(stinger, false, false)
+	SetEntityCoordsNoOffset(stinger, offset.x, offset.y, offset.z, true, true, true)
 	SetEntityHeading(stinger, heading)
 	PlaceObjectOnGroundProperly(stinger)
 
@@ -70,14 +83,16 @@ local function placeStinger()
 
 	TriggerServerEvent("loaf_spikestrips:placedSpikestrip", coords, GetEntityRotation(stinger, 2), minOffset, maxOffset, netId)
 
-	-- Player deploying animation
-	TaskPlayAnim(playerPed, playerDict, "enter", 1000.0, -1.0, 200, 16, 0, false, false, false)
+	if not skipAnimation then
+		-- Player deploying animation
+		TaskPlayAnim(playerPed, playerDict, "enter", 1000.0, -1.0, 200, 16, 0, false, false, false)
 
-	WaitForAnimation(playerPed, playerDict, "enter")
+		WaitForAnimation(playerPed, playerDict, "enter")
 
-	SetAnimRate(playerPed, 3.0, 1.0, false)
+		SetAnimRate(playerPed, 3.0, 1.0, false)
 
-	Wait(550)
+		Wait(550)
+	end
 
 	-- Stinger animation
 	PlayEntityAnim(stinger, "p_stinger_s_deploy", stingerDict, 1000.0, false, true, false, 0.0, 0)
@@ -184,6 +199,10 @@ RegisterNetEvent("loaf_spikestrips:spikestripAdded", function(placer, id, coords
 		point = point,
 	}
 
+	if Config.Blips and IsPolice() then
+		stingers[id].blip = CreateStingerBlip(coords)
+	end
+
 	if Config.RemoveDistance and placer == cache.serverId then
 		while #(GetEntityCoords(cache.ped) - coords) < Config.RemoveDistance and stingers[id] do
 			Wait(1000)
@@ -214,7 +233,12 @@ RegisterNetEvent("loaf_spikestrips:spikestripRemoved", function(id)
 	end
 
 	if stinger.point then
+		stinger.point:onExit()
 		stinger.point:remove()
+	end
+
+	if stinger.blip then
+		RemoveBlip(stinger.blip)
 	end
 
 	if Config.SpawnMethod == "local" and stinger.entity then
@@ -426,12 +450,51 @@ if Config.Command then
 	TriggerEvent("chat:addSuggestion", "/" .. Config.Command, L("place_description"), {})
 end
 
+local function refreshBlips(isPolice)
+	for _, stinger in pairs(stingers) do
+		if Config.Blips and isPolice and not stinger.blip then
+			stinger.blip = CreateStingerBlip(stinger.coords)
+		elseif stinger.blip then
+			RemoveBlip(stinger.blip)
+			stinger.blip = nil
+		end
+	end
+end
+
+if Config.Blips and Config.BlipsCommand then
+	RegisterCommand(Config.BlipsCommand, function()
+		local isPolice = IsPolice()
+
+		if not isPolice then
+			return debugprint("not police")
+		end
+
+		Config.Blips = not Config.Blips
+
+		refreshBlips(isPolice)
+	end, false)
+end
+
+AddEventHandler("loaf_spikestrips:toggleIsPolice", function(isPolice)
+	if not Config.Blips then
+		return
+	end
+
+	refreshBlips(isPolice)
+end)
+
+AddTextEntry("SPIKESTRIP_BLIP", L("blip_name"))
+
 AddEventHandler("onResourceStop", function(resource)
 	if resource ~= GetCurrentResourceName() then
 		return
 	end
 
 	for _, stinger in pairs(stingers) do
+		if stinger.blip then
+			RemoveBlip(stinger.blip)
+		end
+
 		if stinger.entity then
 			DeleteEntity(stinger.entity)
 		end
