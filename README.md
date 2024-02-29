@@ -2,6 +2,10 @@
 
 Spike strip script for FiveM that only bursts the tires that are touching the spikes.
 
+![](https://img.shields.io/github/downloads/loaf-scripts/loaf_spikestrips/total?logo=github)
+![](https://img.shields.io/github/downloads/loaf-scripts/loaf_spikestrips/latest/total?logo=github)
+![](https://img.shields.io/github/v/release/loaf-scripts/loaf_spikestrips?logo=github)
+
 Showcase: https://www.youtube.com/watch?v=iarfWQxAMAg
 
 <details>
